@@ -11,7 +11,7 @@ paths:
   /tokens:
     post:
       operationId: tokens
-      summary: Renvoie un token d'authentification
+      summary: Demander un token d'authentification
       consumes:
         - application/json
       produces:
@@ -40,7 +40,7 @@ paths:
     get:
       description: 'Cette méthode possèdes des paramètres de filtre, tri, et pagination'
       operationId: getContrats
-      summary: Renvoie la liste des contrats
+      summary: Demander la liste des contrats
       produces:
         - application/json
       parameters:
@@ -192,7 +192,7 @@ paths:
   /otp:
     get:
       operationId: getOtp
-      summary: Fait une demande d'envoi d'otp
+      summary: Faire une demande d'envoi d'otp
       produces:
         - application/json
       parameters:
@@ -224,7 +224,7 @@ paths:
   /sign:
     get:
       operationId: sign
-      summary: Signe un contrat
+      summary: Signer un/des contrat(s)
       produces:
         - application/json
       parameters:
@@ -279,7 +279,7 @@ paths:
   /comment:
     get:
       operationId: comment
-      summary: Commente un contrat
+      summary: Commenter un contrat
       produces:
         - application/json
       parameters:
@@ -301,7 +301,7 @@ paths:
   /contratPdf:
     get:
       operationId: getPdf
-      summary: Renvoie le PDF d'un contrat
+      summary: Obtenir le PDF d'un ou plusieurs contrat(s)
       produces:
         - application/pdf
       parameters:
@@ -323,7 +323,7 @@ paths:
   /signFrame:
     get:
       operationId: getSignFrame
-      summary: Renvoie l'url de la frame de signature de contrat
+      summary: Obtenir l'url de la frame de signature de contrat
       produces:
         - application/json
       parameters:
