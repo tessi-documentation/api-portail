@@ -1,0 +1,565 @@
+swagger: '2.0'
+info:
+  description: API du Portail Contrat
+  version: 1.0.0
+  title: API du Portail Contrat
+host: dummy.dummy
+basePath: /api
+schemes:
+  - https
+paths:
+  /tokens:
+    post:
+      summary: Renvoie un token d'authentification
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: Body
+          description: JSON à envoyer pour authentifier l'utilisateur
+          required: true
+          schema:
+            $ref: '#/definitions/tokenRequest'
+      responses:
+        '200':
+          description: Retour OK - Génération d'un token de session
+          schema:
+            $ref: '#/definitions/token200'
+        '404':
+          description: Retour KO - Utilisateur inexistant
+          schema:
+            $ref: '#/definitions/token404'
+        '422':
+          description: Retour KO - Problème dans l'un des paramètres
+          schema:
+            $ref: '#/definitions/token422'
+  '/contrats/{bu}/{method}':
+    get:
+      description: 'Cette méthode possèdes des paramètres de filtre, tri, et pagination'
+      summary: Renvoie la liste des contrats
+      produces:
+        - application/json
+      parameters:
+        - name: bu
+          in: path
+          type: string
+          description: "Nom de la bu (reunion, adecco, dfa, ...)"
+          required: true
+        - name: method
+          in: path
+          type: string
+          description: >
+            Peut prendre trois valeurs : [toSign, ongoing, histo]. toSign
+            renvoie la liste des contrats de l'onglet à signer, ongoing la liste
+            des contrats en cours à la date du jour, histo la liste des contrats
+            historisés. <br> toSign renvoie en plus (en dernier objet de la
+            liste) une liste de compteurs de la forme suivante : <br> <pre> {
+            <br> &nbsp;&nbsp;TODAY : 0,<br> &nbsp;&nbsp;NOT_SIGNED : 4, <br>
+            &nbsp;&nbsp;HISTO : 3, <br> &nbsp;&nbsp;EN_COURS : 2<br> } </pre>
+            <br> <p> Les autres (ongoing, histo) renvoient en dernier élément le
+            nombre total de contrats (utile pour la pagination notamment), sous
+            cette forme :<br> </p> <pre> {<br> &nbsp;&nbsp;nbTotalSansLimite :
+            28<br> } </pre>
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Token de session
+          required: true
+        - name: sortProperty
+          in: query
+          type: string
+          description: |-
+            Propriété sur laquelle trier : 
+
+            - contractStartDate (date de début de contrat)
+
+            - contractEndDate (date de fin de contrat)
+
+            - contrat_id (identifiant du contrat)
+
+            - company_name (libellé de l'agence)
+
+            - temporaryEmployeeLastname (nom de l'intérimaire)
+
+            - sous_compte
+          enum:
+            - contractStartDate
+            - contractEndDate
+            - contrat_id
+            - company_name
+            - temporaryEmployeeLastname
+            - sous_compte
+        - name: sortOrder
+          in: query
+          type: string
+          description: 'Ordre de tri : [asc, desc]'
+          enum:
+            - asc
+            - desc
+        - name: startList
+          in: query
+          type: integer
+          description: Indice de départ de la pagination
+        - name: endList
+          in: query
+          type: integer
+          description: Indice de fin de la pagination
+        - name: contractStartDate
+          in: query
+          type: string
+          description: >-
+            Bornes encadrant la date de début de contrat, au format YYYY-MM-DD.
+            On peut aussi ne remplir que l'une des deux bornes.
+        - name: contractEndDate
+          in: query
+          type: string
+          description: >-
+            Bornes encadrant la date de fin de contrat, au format YYYY-MM-DD. On
+            peut aussi ne remplir que l'une des deux bornes.
+        - name: agencyCityName
+          in: query
+          type: string
+          description: Ville de l'agence
+        - name: targetName
+          in: query
+          type: string
+          description: Nom du client
+        - name: temporaryEmployeeLastname
+          in: query
+          type: string
+          description: Nom de l'intérimaire
+        - name: company_name
+          in: query
+          type: string
+          description: Libellé de l'agence
+        - name: agency_id
+          in: query
+          type: string
+          description: Identifiant de l'agence
+        - name: contrat_id
+          in: query
+          type: string
+          description: Identifiant du contrat
+        - name: status
+          in: query
+          type: string
+          description: |-
+            Statut du contrat : 
+
+            - SIGNED (signé)
+            
+            - NOT_SIGNED (non signé)
+            
+            - CANCELLED (annulé)
+            
+            - PAPER (signé papier)
+            
+            - DELETED (supprimé)
+          enum:
+            - SIGNED
+            - NOT_SIGNED
+            - CANCELLED
+            - PAPER
+            - DELETED
+        - name: sous_compte
+          in: query
+          type: string
+          description: Libellé du sous_compte
+        - name: siret
+          in: query
+          type: string
+          description: Siret du client
+        - name: companyId
+          in: query
+          type: string
+          description: Identifiant de l'établissement
+        - name: bu_id
+          in: query
+          type: string
+          description: Identifiant de la BU
+      responses:
+        '200':
+          description: Réponse OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/contrat'
+  /otp:
+    get:
+      summary: Fait une demande d'envoi d'otp
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: query
+          type: string
+          description: Token de session
+          required: true
+        - name: documentsIds
+          in: query
+          type: string
+          description: >-
+            Liste des documents pour lesquels on demande l'envoi d'un code OTP
+            par sms, séparés par des virgules.
+          required: true
+      responses:
+        '200':
+          description: Réponse OK
+          schema:
+            $ref: '#/definitions/otp200'
+        '400':
+          description: Réponse KO - Paramètres invalides
+          schema:
+            $ref: '#/definitions/otp400'
+        '500':
+          description: Réponse KO - Erreur interne
+          schema:
+            $ref: '#/definitions/otp500'
+  /sign:
+    get:
+      summary: Signe un contrat
+      produces:
+        - application/json
+      parameters:
+        - name: documentsIds
+          in: query
+          type: string
+          description: >-
+            Liste des documents pour lesquels on demande la signature, séparés
+            par des virgules.
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Token de session
+          required: true
+        - name: otp
+          in: query
+          type: number
+          description: OTP relatif à ces documents
+          required: true
+      responses:
+        '200':
+          description: ">-
+            Liste de documents, avec chacun un statut. Il y a trois codes : 
+
+            - tokenStatus:invalid --> code otp invalide
+
+            - tokenStatus:expired --> code otp expiré
+
+            - not_signed --> erreur technique
+
+            En l'abscence de code erreur, on renvoie la valeur 'false'. "
+          schema:
+            type: object
+            properties:
+              33840: 
+                type: string
+                description: Exemple de code document
+                example: 'tokenStatus: invalid'
+              33841: 
+                type: string
+                description: Exemple de code document
+                example: 'tokenStatus: expired'
+              33842: 
+                type: string
+                description: Exemple de code document
+                example: not_signed
+              33843: 
+                type: string
+                description: Exemple de code document
+                example: 'false'
+  /comment:
+    get:
+      summary: Commente un contrat
+      produces:
+        - application/json
+      parameters:
+        - name: documentsIds
+          type: string
+          in: query
+          description: 'Liste des documents à commenter, séparés par des virgules.'
+        - name: comment
+          type: string
+          in: query
+          description: Commentaire
+      responses:
+        '200':
+          description: Réponse OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/comment'
+  /contratPdf:
+    get:
+      summary: Renvoie le PDF d'un contrat
+      produces:
+        - application/pdf
+      parameters:
+        - name: documentsIds
+          type: string
+          in: query
+          description: 'Liste des documents à récupérer, séparés par des virgules.'
+        - name: hash
+          type: string
+          in: query
+          description: >-
+            Hash md5 de la concaténation des hashes des documents à afficher :
+            md5(concat(hash_doc1,hash_doc2,…))
+      responses:
+        '200':
+          description: Réponse OK
+          examples:
+            application/pdf: Fichier binaire application/pdf
+  /signFrame:
+    get:
+      summary: Renvoie l'url de la frame de signature de contrat
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: query
+          type: string
+          description: Token de session
+          required: true
+        - name: documentsIds
+          in: query
+          type: string
+          description: >-
+            Liste des documents pour lesquels on demande l'envoi d'un code OTP
+            par sms, séparés par des virgules.
+          required: true
+      responses:
+        '200':
+          description: Réponse OK
+          schema:
+            type: object
+            properties:
+              signFrame:
+                type: string
+                description: Url de la frame
+                example: 'http://signFrame.url'
+definitions:
+  tokenRequest:
+    type: object
+    properties:
+      internal_key:
+        type: string
+        description: Clé privée (à déterminer)
+        example: 65997864e687e3a8c7bfad828191e
+      data:
+        type: object
+        properties:
+          user_login:
+            type: number
+            description: Code de l'utilisateur à connecter
+            example: '8049565'
+          user_type:
+            type: string
+            description: '[CMIS, CMAD]'
+            example: CMIS
+  token200:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Message d'information
+        example: Connexion réussie
+      token:
+        type: string
+        description: Token de session
+        example: 773e920bbaeb7fe6a47945c9d70f4f6
+  token422:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Message d'information
+        example: Clé invalide
+      token:
+        type: string
+        description: Token de session
+        example: ''
+  token404:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Message d'information
+        example: Utilisateur inexistant
+      token:
+        type: string
+        description: Token de session
+        example: ''
+  otp200:
+    type: object
+    properties:
+      errors:
+        type: array
+        description: Messages d'erreurs éventuels
+        example: []
+      message:
+        type: string
+        description: Message d'information
+        example: Le code a bien été envoyé au numéro 0000000000
+      phone:
+        type: string
+        description: Numéro de téléphone sur lequel le message est envoyé
+        example: '0000000000'
+  otp500:
+    type: object
+    properties:
+      errors:
+        type: array
+        description: Messages d'erreurs éventuels
+        example:
+          - Le code n'a pas pu être envoyé
+      message:
+        type: string
+        description: Message d'information
+        example: Le code n'a pas pu être envoyé
+      phone:
+        type: string
+        description: Numéro de téléphone sur lequel le message est envoyé
+        example: '0000000000'
+  otp400:
+    type: string
+    description: Message d'erreur
+    example: Le numéro de téléphone est invalide
+  comment:
+    type: object
+    properties:
+      status:
+        type: string
+        description: Statut du commentaire
+        example: Commentaire ajouté
+      idDoc:
+        type: number
+        description: Identifiant du document
+        example: '33840'
+      user:
+        type: number
+        description: Identifiant de l'utilisateur
+        example: '213456'
+  contrat:
+    type: object
+    properties:
+      document_id:
+        type: integer
+        description: Identifiant technique du document
+        example: '17665'
+      hash:
+        type: string
+        description: Hash permettant d'identifier le document
+        example: d72f76150e569700b547f8d50dcf2d50
+      name:
+        type: string
+        description: Nom du PDF
+        example: MADT_01P52224_06210_00_201704110323.pdf
+      customerType:
+        type: string
+        description: 'Type d''utilisateur (CMAD, CMIS)'
+        example: CMAD
+      nameTechnique:
+        type: string
+        description: Nom technique du PDF
+        example: 58ecd96aacc16_MADT_01P52224_06210_00_201704110323.pdf
+      typeDocument:
+        type: string
+        description: 'Type de document (Contrat, Avenant)'
+        example: Contrat
+      created:
+        type: string
+        description: Date de création
+        example: '2017-04-11 15:26:02'
+      status:
+        type: string
+        description: Statut du document
+        example: SIGNED
+      status_label:
+        type: string
+        description: Libellé du statut
+        example: Signé
+      commentaire:
+        type: string
+        description: Commentaire
+        example: NOTIF FULL
+      agency_id:
+        type: string
+        description: Identifiant de l'agence
+        example: P52
+      company_name:
+        type: string
+        description: Libellé de l'agence
+        example: ADECCO_BREST_PME
+      company_id:
+        type: integer
+        description: Identifiant de l'établissement
+        example: '1949'
+      customerFirstName:
+        type: string
+        description: Prénom de l'utilisateur lié au contrat
+        example: CHRISTELLE
+      customerLastName:
+        type: string
+        description: Nom de l'utilisateur lié au contrat
+        example: BIGER
+      customerCode:
+        type: string
+        description: Code utilisateur lié au contrat
+        example: '5143808'
+      customerSiret:
+        type: string
+        description: Siret lié au contrat
+        example: '80369917200026'
+      temporaryEmployeeFirstname:
+        type: string
+        description: Prénom de l'intérimaire
+        example: JEAN BAPTI
+      temporaryEmployeeLastname:
+        type: string
+        description: Nom de l'intérimaire
+        example: DAMOY
+      code_sous_compte:
+        type: string
+        description: Code du sous compte
+        example: '0'
+      libelle_sous_compte:
+        type: string
+        description: Libellé du sous compte
+        example: ''
+      contractStartDate:
+        type: string
+        description: Date de début du contrat
+        example: '2017-04-11'
+      contractEndDate:
+        type: string
+        description: Date de fin de contrat
+        example: '2017-04-12'
+      agencyCityName:
+        type: string
+        description: Ville de l'agence
+        example: BREST
+      targetName:
+        type: string
+        description: Nom du client
+        example: AMBIANCE PEINTURE L BIGER
+      contrat_id:
+        type: string
+        description: Identifiant du contrat
+        example: '6210_0'
+      marque_id:
+        type: string
+        description: Identifiant de la marque
+        example: '0'
+      bu_id:
+        type: string
+        description: Identifiant de la BU
+        example: '01'
+      date_signature:
+        type: string
+        description: Date de signature du contrat
+        example: '2017-04-11 16:10:08'
