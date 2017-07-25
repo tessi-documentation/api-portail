@@ -439,7 +439,7 @@ definitions:
   comment:
     type: object
     properties:
-      33840:
+      numero_contrat:
         type: object
         properties:
           status:
