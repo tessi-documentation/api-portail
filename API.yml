@@ -439,21 +439,18 @@ definitions:
   comment:
     type: object
     properties:
-      33840:
-        type: object
-        properties:
-          status:
-            type: string
-            description: Statut du commentaire
-            example: Commentaire ajouté
-          idDoc:
-            type: number
-            description: Identifiant du document
-            example: '33840'
-          user:
-            type: number
-            description: Identifiant de l'utilisateur
-            example: '213456'
+      status:
+        type: string
+        description: Statut du commentaire
+        example: Commentaire ajouté
+      idDoc:
+        type: number
+        description: Identifiant du document
+        example: '33840'
+      user:
+        type: number
+        description: Identifiant de l'utilisateur
+        example: '213456'
   contrat:
     type: object
     properties:
