@@ -380,6 +380,10 @@ definitions:
             type: number
             description: 'Identifiant de la bu'
             example: '01'
+          marque:
+            type: number
+            description: 'Identifiant de la marque'
+            example: '0'
   token200:
     type: object
     properties:
